@@ -585,4 +585,146 @@ final class AuthorizationServerTest extends AbstractIntegrationTest
         $this->assertSame('invalid_client', $response['error']);
         $this->assertSame('Client authentication failed', $response['message']);
     }
+
+    public function testSuccessfulImplicitRequest(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+            'response_type' => 'token',
+            'client_id' => 'foo',
+        ]);
+
+        $response = $this->handleAuthorizeRequest($request);
+        $accessToken = $this->getAccessToken($response['access_token']);
+
+        // Response assertions.
+        $this->assertSame('Bearer', $response['token_type']);
+        $this->assertEquals(600, $response['expires_in']);
+        $this->assertInstanceOf(AccessToken::class, $accessToken);
+        $this->assertSame('foo', $accessToken->getClient()->getIdentifier());
+    }
+
+    public function testSuccessfulImplicitRequestWithState(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'foo',
+                'state' => 'quzbaz',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request);
+        $accessToken = $this->getAccessToken($response['access_token']);
+
+        // Response assertions.
+        $this->assertSame('Bearer', $response['token_type']);
+        $this->assertEquals(600, $response['expires_in']);
+        $this->assertInstanceOf(AccessToken::class, $accessToken);
+        $this->assertSame('foo', $accessToken->getClient()->getIdentifier());
+        $this->assertSame('quzbaz', $response['state']);
+    }
+
+    public function testSuccessfulImplicitRequestRedirectUri(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'foo',
+                'redirect_uri' => 'https://example.org/oauth2/redirect-uri',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request);
+        $accessToken = $this->getAccessToken($response['access_token']);
+
+        // Response assertions.
+        $this->assertSame('Bearer', $response['token_type']);
+        $this->assertEquals(600, $response['expires_in']);
+        $this->assertInstanceOf(AccessToken::class, $accessToken);
+        $this->assertSame('foo', $accessToken->getClient()->getIdentifier());
+    }
+
+    public function testImplicitRequestWithInvalidScope(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'foo',
+                'scope' => 'non_existing',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request);
+
+        // Response assertions.
+        $this->assertSame('invalid_scope', $response['error']);
+        $this->assertSame('The requested scope is invalid, unknown, or malformed', $response['message']);
+        $this->assertSame('Check the `non_existing` scope', $response['hint']);
+    }
+
+    public function testImplicitRequestWithInvalidRedirectUri(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'foo',
+                'redirect_uri' => 'https://example.org/oauth2/other-uri',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request);
+
+        // Response assertions.
+        $this->assertSame('invalid_client', $response['error']);
+        $this->assertSame('Client authentication failed', $response['message']);
+    }
+
+    public function testDeniedImplicitRequest(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'foo',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request, false);
+
+        // Response assertions.
+        $this->assertSame('access_denied', $response['error']);
+        $this->assertSame('The resource owner or authorization server denied the request.', $response['message']);
+        $this->assertSame('The user denied the request', $response['hint']);
+    }
+
+    public function testImplicitRequestWithMissingClient(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'yolo',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request, false);
+
+        // Response assertions.
+        $this->assertSame('invalid_client', $response['error']);
+        $this->assertSame('Client authentication failed', $response['message']);
+    }
+
+    public function testImplicitRequestWithInactiveClient(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'baz_inactive',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request, false);
+
+        // Response assertions.
+        $this->assertSame('invalid_client', $response['error']);
+        $this->assertSame('Client authentication failed', $response['message']);
+    }
+
+    public function testImplicitRequestWithRestrictedGrantClient(): void
+    {
+        $request = $this->createAuthorizeRequest(null, [
+                'response_type' => 'token',
+                'client_id' => 'qux_restricted',
+            ]);
+
+        $response = $this->handleAuthorizeRequest($request, false);
+
+        // Response assertions.
+        $this->assertSame('invalid_client', $response['error']);
+        $this->assertSame('Client authentication failed', $response['message']);
+    }
 }
