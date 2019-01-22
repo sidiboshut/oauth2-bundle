@@ -93,6 +93,12 @@ class TestKernel extends Kernel implements CompilerPassInterface
                     'stateless' => true,
                     'oauth2' => true,
                 ],
+                'introspection' => [
+                    'pattern' => '^/introspect',
+                    'anonymous' => true,
+                    'stateless' => true,
+                    'oauth2' => true,
+                ],
             ],
             'providers' => [
                 'in_memory' => [

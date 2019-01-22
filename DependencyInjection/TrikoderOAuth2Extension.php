@@ -90,6 +90,7 @@ final class TrikoderOAuth2Extension extends Extension implements PrependExtensio
         ]);
 
         $this->configureGrants($container, $config);
+        $this->configureIntrospection($container, $config['encryption_key']);
     }
 
     private function configureGrants(ContainerBuilder $container, array $config): void
@@ -106,6 +107,14 @@ final class TrikoderOAuth2Extension extends Extension implements PrependExtensio
             ->addMethodCall('setRefreshTokenTTL', [
                 new Definition(DateInterval::class, [$config['refresh_token_ttl']]),
             ])
+        ;
+    }
+
+    private function configureIntrospection(ContainerBuilder $container, string $encryptionKey)
+    {
+        $container
+            ->getDefinition('trikoder.oauth2.controller.introspection_controller')
+            ->replaceArgument('$encryptionKey', $encryptionKey)
         ;
     }
 
