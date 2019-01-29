@@ -210,11 +210,22 @@ final class TrikoderOAuth2Extension extends Extension implements PrependExtensio
 
     private function configureOpenIDConnect(ContainerBuilder $container, array $openid_connect): void
     {
-        if (isset($openid_connect['enabled']) && $openid_connect['enabled']) {
+        if ($openid_connect['enabled']) {
             $container
                 ->getDefinition('league.oauth2.server.authorization_server')
                 ->setArgument(5, new Reference('openid_connect_server.id_token_response'))
             ;
+
+            if ($openid_connect['session']) {
+                $container
+                    ->getDefinition('trikoder.oauth2.controller.authorization_controller')
+                    ->setArgument(4, new Reference('trikoder.oauth2.openid_connect.session_manager'))
+                ;
+                $container
+                    ->getDefinition('trikoder.oauth2.controller.authorization_controller')
+                    ->setArgument(5, new Reference('sensio_framework_extra.psr7.http_foundation_factory'))
+                ;
+            }
         }
     }
 }

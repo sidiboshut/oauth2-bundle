@@ -100,6 +100,12 @@
             <tag name="controller.service_arguments" />
         </service>
 
+        <!-- Session management controller -->
+        <service id="trikoder.oauth2.controller.session_management_controller" class="Trikoder\Bundle\OAuth2Bundle\Controller\SessionManagementController">
+            <argument type="service" id="trikoder.oauth2.openid_connect.session_manager" />
+            <tag name="controller.service_arguments" />
+        </service>
+
         <!-- OpenID Connect Provider -->
         <service id="trikoder.oauth2.openid_connect.repository.identity_provider" class="Trikoder\Bundle\OAuth2Bundle\OpenIDConnect\Repository\IdentityProvider">
             <argument type="service" id="Symfony\Component\EventDispatcher\EventDispatcherInterface" />
@@ -108,6 +114,19 @@
         <service id="openid_connect_server.id_token_response" class="OpenIDConnectServer\IdTokenResponse">
             <argument type="service" id="trikoder.oauth2.openid_connect.repository.identity_provider" />
             <argument type="service" id="openid_connect_server.claim_extractor" />
+        </service>
+
+        <!-- OpenID Connect Session Management -->
+        <service id="trikoder.oauth2.openid_connect.session_manager" class="Trikoder\Bundle\OAuth2Bundle\OpenIDConnect\SessionManager">
+            <argument type="service" id="Symfony\Component\HttpFoundation\RequestStack" />
+            <argument type="service" id="Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface" />
+            <argument type="service" id="security.firewall.map" />
+            <argument type="service" id="Symfony\Component\Routing\Generator\UrlGeneratorInterface" />
+        </service>
+
+        <!-- Reset Browser Status Logout Handler -->
+        <service id="trikoder.oauth2.security.logout.reset_browser_status.handler" class="Trikoder\Bundle\OAuth2Bundle\Security\Http\Logout\ResetBrowserStatusLogoutHandler">
+            <argument type="service" id="trikoder.oauth2.openid_connect.session_manager" />
         </service>
 
         <!-- Utility services -->

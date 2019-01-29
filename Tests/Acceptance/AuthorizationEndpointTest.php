@@ -47,6 +47,50 @@ final class AuthorizationEndpointTest extends AbstractAcceptanceTest
         parse_str(parse_url($redirectUri, PHP_URL_QUERY), $query);
         $this->assertArrayHasKey('code', $query);
         $this->assertArrayHasKey('state', $query);
+        $this->assertArrayNotHasKey('session_state', $query);
+        $this->assertEquals('foobar', $query['state']);
+    }
+
+    public function testSuccessfulCodeRequestWithSessionManagement()
+    {
+        $this->client
+            ->getContainer()
+            ->get('event_dispatcher')
+            ->addListener(OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE, function (AuthorizationRequestResolveEvent $event) {
+                $event->resolveAuthorization(AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED);
+            });
+
+        timecop_freeze(new DateTime());
+
+        $this->client->request(
+            'GET',
+            '/authorize',
+            [
+                'client_id' => FixtureFactory::FIXTURE_CLIENT_FIRST,
+                'response_type' => 'code',
+                'state' => 'foobar',
+                'scope' => 'openid',
+            ],
+            [],
+            [
+                'PHP_AUTH_USER' => FixtureFactory::FIXTURE_USER,
+                'PHP_AUTH_PW' => FixtureFactory::FIXTURE_PASSWORD,
+            ]
+        );
+
+        timecop_return();
+
+        $response = $this->client->getResponse();
+
+        $this->assertSame(302, $response->getStatusCode());
+        $redirectUri = $response->headers->get('Location');
+
+        $this->assertStringStartsWith(FixtureFactory::FIXTURE_CLIENT_FIRST_REDIRECT_URI, $redirectUri);
+        $query = [];
+        parse_str(parse_url($redirectUri, PHP_URL_QUERY), $query);
+        $this->assertArrayHasKey('code', $query);
+        $this->assertArrayHasKey('state', $query);
+        $this->assertArrayHasKey('session_state', $query);
         $this->assertEquals('foobar', $query['state']);
     }
 

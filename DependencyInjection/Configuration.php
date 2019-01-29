@@ -136,12 +136,13 @@ final class Configuration implements ConfigurationInterface
 
         $node
             ->info('Adds OpenID Connect Provider capabilities.')
-            ->treatFalseLike(['enabled' => false])
-            ->treatTrueLike(['enabled' => true])
-            ->treatNullLike(['enabled' => false])
+            ->treatFalseLike(['enabled' => false, 'session' => false])
+            ->treatTrueLike(['enabled' => true, 'session' => false])
+            ->treatNullLike(['enabled' => false, 'session' => false])
             ->addDefaultsIfNotSet()
             ->children()
-                ->booleanNode('enabled')->defaultNull()->end()
+                ->booleanNode('enabled')->defaultFalse()->end()
+                ->booleanNode('session')->defaultFalse()->end()
             ->end()
         ;
 

@@ -86,13 +86,15 @@ class TestKernel extends Kernel implements CompilerPassInterface
         $container->loadFromExtension('framework', [
             'secret' => 'nope',
             'test' => null,
+            'session' => [
+                'storage_id' => 'session.storage.mock_file',
+            ],
         ]);
 
         $container->loadFromExtension('security', [
             'firewalls' => [
                 'auth' => [
                     'pattern' => '^/authorize',
-                    'stateless' => true,
                     'http_basic' => true,
                 ],
                 'test' => [
@@ -142,6 +144,7 @@ class TestKernel extends Kernel implements CompilerPassInterface
             ],
             'openid_connect' => [
                 'enabled' => true,
+                'session' => true,
             ],
         ]);
 
