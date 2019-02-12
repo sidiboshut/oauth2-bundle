@@ -10,6 +10,7 @@ use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
@@ -231,8 +232,10 @@ abstract class AbstractIntegrationTest extends TestCase
             return json_decode($response->getBody(), true);
         }
 
+        $location = $response->getHeaderLine('Location');
+        $component = false !== strpos($location, '#') ? PHP_URL_FRAGMENT : PHP_URL_QUERY;
         $data = [];
-        parse_str(parse_url($response->getHeaderLine('Location'), PHP_URL_QUERY), $data);
+        parse_str(parse_url($location, $component), $data);
 
         return $data;
     }
@@ -257,6 +260,7 @@ abstract class AbstractIntegrationTest extends TestCase
         $authorizationServer->enableGrantType(new RefreshTokenGrant($refreshTokenRepository));
         $authorizationServer->enableGrantType(new PasswordGrant($userRepository, $refreshTokenRepository));
         $authorizationServer->enableGrantType(new AuthCodeGrant($authCodeRepository, $refreshTokenRepository, new DateInterval('PT10M')));
+        $authorizationServer->enableGrantType(new ImplicitGrant(new DateInterval('PT10M')));
 
         return $authorizationServer;
     }
