@@ -46,6 +46,8 @@ final class AuthorizationController
             $authRequest = $this->server->validateAuthorizationRequest($serverRequest);
             $authRequest->setUser($this->getUserEntity());
 
+            $this->addAuthrozationRequestListener();
+
             /** @var AuthorizationRequestResolveEvent $event */
             $event = $this->eventDispatcher->dispatch(
                 OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
@@ -62,6 +64,16 @@ final class AuthorizationController
         } catch (OAuthServerException $e) {
             return $e->generateHttpResponse($serverResponse);
         }
+    }
+
+    private function addAuthrozationRequestListener()
+    {
+        $this->eventDispatcher->addListener(OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE, function (AuthorizationRequestResolveEvent $event) {
+
+            if (NULL !== $event->getUser()) {
+                $event->resolveAuthorization(AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED);
+            }
+        });
     }
 
     private function getUserEntity(): User

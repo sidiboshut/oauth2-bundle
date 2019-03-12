@@ -33,10 +33,6 @@ final class AuthorizationRequestResolveEvent extends Event
     public function __construct(AuthorizationRequest $authorizationRequest)
     {
         $this->authorizationRequest = $authorizationRequest;
-        // Approve authorization if user is logged in
-        if (NULL !== $this->getUser()) {
-            $this->resolveAuthorization(self::AUTHORIZATION_APPROVED); // TODO look further into this logic
-        }
     }
 
     public function getAuhorizationResolution(): bool
