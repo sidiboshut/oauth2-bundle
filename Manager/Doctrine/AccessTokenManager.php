@@ -23,6 +23,7 @@ final class AccessTokenManager implements AccessTokenManagerInterface
      */
     public function find(string $identifier): ?AccessToken
     {
+        $identifier = trim($identifier);
         return $this->entityManager->find(AccessToken::class, $identifier);
     }
 

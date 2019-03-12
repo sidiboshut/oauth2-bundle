@@ -23,6 +23,7 @@ final class ClientManager implements ClientManagerInterface
      */
     public function find(string $identifier): ?Client
     {
+        $identifier = trim($identifier);
         return $this->entityManager->find(Client::class, $identifier);
     }
 

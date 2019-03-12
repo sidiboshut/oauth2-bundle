@@ -23,6 +23,7 @@ final class RefreshTokenManager implements RefreshTokenManagerInterface
      */
     public function find(string $identifier): ?RefreshToken
     {
+        $identifier = trim($identifier);
         return $this->entityManager->find(RefreshToken::class, $identifier);
     }
 

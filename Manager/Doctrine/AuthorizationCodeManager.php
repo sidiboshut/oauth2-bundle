@@ -23,6 +23,7 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
      */
     public function find(string $identifier): ?AuthorizationCode
     {
+        $identifier = trim($identifier);
         return $this->entityManager->find(AuthorizationCode::class, $identifier);
     }
 
